@@ -3,8 +3,8 @@ import java.awt.*;
 /**
  * This class stores information about a specific card.
  *
- * @author Nicholas R. Howe
- * @version CSC 112, Sept. 2009
+ * @author Jenna Paczkowski
+ * @version CSC 210, Oct. 2025
  */
 public class Card {
     /** Prototype of card -- ranks, suit, appearance */
