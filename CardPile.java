@@ -5,8 +5,8 @@ import java.util.*;
  * This class stores a collection of playing cards
  * in a linked list format.
  *
- * @author Nicholas R. Howe
- * @version CSC 112, 22 February 2006
+ * @author Jenna Paczkowski
+ * @version CSC 210, Oct. 2025
  */
 public class CardPile extends LinkedList<Card> {
     /** Location of the pile of cards on the table */
@@ -77,7 +77,11 @@ public class CardPile extends LinkedList<Card> {
      * @param mark New card goes after this one
      */
     public void insertAfter(Card card, Card mark) {
-        // FILL IN
+        ListIterator<Card> position = listIterator(size());
+        while(position.hasNext() && (position.next() != mark)) {
+            //empty loop to find card
+        }
+        position.add(card);
     }
 
     /**
@@ -105,7 +109,41 @@ public class CardPile extends LinkedList<Card> {
      * @param mark   insert after this point
      */
     public void insertAfter(CardPile insert, Card mark) {
-        // FILL IN
+        ListIterator<Card> position =listIterator(size());
+        while(position.hasNext() && (position.next() != mark)) {
+            //empty loop to find card
+        }
+        while (insert.size() > 0) {
+            position.add(insert.removeFirst());
+        }
+    }
+
+    /**
+     * Find an iterator just before the mark
+     *
+     * @param mark New card goes before this one
+     * @return position of the mark 
+     */
+    public ListIterator<Card> iteratorBefore(Card mark) {
+        ListIterator<Card> position = listIterator(size());
+        while (position.hasPrevious() && (position.previous() != mark)) {
+            // keep going until we find our card
+        }
+        return position;
+    }
+    
+    /**
+     * Find an iterator just after the mark
+     * 
+     * @param mark New card goes after this one
+     * @return position of the mark 
+     */
+    public ListIterator<Card> iteratorAfter(Card mark){
+        ListIterator<Card> position = listIterator(size());
+        while(position.hasNext() && (position.next() != mark)) {
+            //empty loop until we get to the desired card
+        }
+        return position;
     }
 
     /**
@@ -117,8 +155,26 @@ public class CardPile extends LinkedList<Card> {
      * @return the suffix pile
      */
     public CardPile split(Card mark) {
-        // FILL IN -- return value below is temporary, for clean compile
-        return null;
+
+        if(this.isEmpty()) {
+            throw new IllegalStateException("You cannot split cards from an empty pile.");
+        }
+
+        CardPile newPile = new CardPile(0, 0);
+
+        if (mark == null) {
+            newPile.addAll(this);
+            this.clear();
+            return newPile;
+        }
+
+        ListIterator<Card> position = this.iteratorBefore(mark);
+        while(position.hasNext()){
+            Card card = position.next(); 
+            position.remove();
+            newPile.addLast(card);
+        }
+        return newPile;
     }
 
     /**
