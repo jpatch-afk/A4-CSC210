@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ListIterator;
+
 import javax.swing.*;
 
 /**
@@ -21,8 +23,8 @@ import javax.swing.*;
  *    the pile should be inserted into some fixed pile according to
  *    where the mouse was released. 
  *  
- *  @author Nicholas R. Howe
- *  @version CSC 112, 8 February 2006
+ *  @author Jenna Paczkowski
+ *  @version CSC 210, Oct. 2025
  */
 public class CardGame extends JComponent {
     /** The GUI object */
@@ -49,6 +51,12 @@ public class CardGame extends JComponent {
     /** Records index of pile under last mouse press */
     CardPile pileUnderMouse;
 
+    //Event listeners
+    Responder responder = new Responder();
+
+    //addMouseListener(responder); 
+    //addMouseMotionListener(responder);
+
     /** Initialize a table with a deck of cards in the first slot */
     public CardGame() {
 	pile[0] = new CardPile(Card.newDeck(),2,2);
@@ -57,28 +65,31 @@ public class CardGame extends JComponent {
 	pile[3] = new CardPile(2,302);
 	pile[4] = new CardPile(2,402);
 
-        // Add code here to turn over all the cards
-        // FILL IN
+    //Iterator for flipping cards
+    for(CardPile p: pile){
+        ListIterator<Card> position = p.listIterator();
+        while(position.hasNext()) {
+            Card c = position.next();
+            if(!c.getIsFaceUp()){
+                c.flipCard();
+            }
+        }
+    }
 
         // Sample card movements. 
-        // Uncomment these one at a time to see what they do.
-	//pile[0].getLast().flipCard();
-        //pile[1].addLast(pile[0].removeLast());
-        //pile[1].addLast(pile[0].removeLast());
-        //pile[1].addFirst(pile[0].removeFirst());
-
-        // Now add your card movements for stage 1 here.
-        // FILL IN
-
-        // Once you have written the split() method in CardPile 
-        // you can uncomment and test the line below.
+	    //pile[0].getLast().flipCard();
+        // pile[1].addLast(pile[0].removeLast());
+        // pile[1].addLast(pile[0].removeLast());
+        // pile[1].addFirst(pile[0].removeFirst());
+        
+        //Testing split method and other insert methods
         //pile[2].addAll(pile[0].split(pile[0].get(26)));
 
         // Next try other uses of split.
         // Then try out the various insert methods.
         // You should test out all the methods of CardGame that move cards
         // and make sure that they all work as intended.
-        // FILL IN
+        
     }
 
     /**
@@ -203,10 +214,13 @@ public class CardGame extends JComponent {
         /** Click event handler */
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-		System.out.println("Mouse double click event at ("+e.getX()+","+e.getY()+").");
-                // FILL IN
-		// What happens here when a pile is double clicked?
-		
+		        System.out.println("Mouse double click event at ("+e.getX()+","+e.getY()+").");
+                CardPile currentPile = locatePile(e.getX(), e.getY());
+                ListIterator<Card> position= currentPile.iteratorBefore(currentPile.getLast());
+                while (position.hasNext()){
+                    Card currentCard = position.next();
+                    currentCard.flipCard();
+                }
                 repaint();
             }
         }
@@ -216,16 +230,46 @@ public class CardGame extends JComponent {
          * but doesn't move any data until we have a drag event
          */
         public void mousePressed(MouseEvent e) {
-	    // FILL IN
-	    // What happens here when the mouse is pressed?
+
+            int x = e.getX();
+            int y = e.getY(); 
+
+            pileUnderMouse = locatePile(x, y);
+
+            cardUnderMouse = locateCard(x, y);
+
+            if (pileUnderMouse == null) {
+                System.out.println("No pile has been clicked, so no card is clicked.");
+                cardUnderMouse = null;
+            }
         }
 
         /** Release event handler */
         public void mouseReleased(MouseEvent e) {
-            if (movingPile != null) {
-		// FILL IN
-                // We have a pile coming to rest -- where? what happens?
 
+            int x = e.getX();
+            int y = e.getY(); 
+
+            if (movingPile != null) {
+
+                CardPile newPile = locatePile(x, y);
+                Card newCard = locateCard(x, y);
+
+                if (newPile != null) {
+                    if(newCard != null && newPile.contains(newCard)) {
+                        newPile.insertAfter(movingPile, newCard);
+                    }
+                    else {
+                        Card lastCard = newPile.getLast(); 
+                        if(lastCard != null) {
+                            newPile.insertAfter(movingPile, lastCard);
+                        }
+                        else {
+                            newPile.append(movingPile);
+                        }
+                    }
+                }
+                movingPile = null;
             }
             repaint();
         }
@@ -240,9 +284,26 @@ public class CardGame extends JComponent {
 
         /** Drag event handler moves piles around */
         public void mouseDragged(MouseEvent e) {
-	    // FILL IN
-	    // What happens when the mouse is dragged?
-	    // What if it is the first drag after a mouse down?
+
+            int x = e.getX();
+            int y = e.getY(); 
+
+            if (movingPile != null) {
+                movingPile.setX(x);
+                movingPile.setY(y);
+            }
+            else {
+                if(pileUnderMouse == null) { //There is no pile to be dragged, so no event happens
+                    return;
+                }
+                if(cardUnderMouse == null){
+                    movingPile = pileUnderMouse.split(cardUnderMouse);
+                }
+                else {
+                    pileUnderMouse.split(cardUnderMouse);
+                    movingPile.add(cardUnderMouse);
+                }
+            }
         }
 
         /** Move event handler */
@@ -301,4 +362,6 @@ public class CardGame extends JComponent {
             }
         });
     }
+
+
 } // end of CardGame

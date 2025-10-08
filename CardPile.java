@@ -169,6 +169,7 @@ public class CardPile extends LinkedList<Card> {
         }
 
         ListIterator<Card> position = this.iteratorBefore(mark);
+        
         while(position.hasNext()){
             Card card = position.next(); 
             position.remove();
